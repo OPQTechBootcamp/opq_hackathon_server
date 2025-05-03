@@ -1,0 +1,26 @@
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/authRoutes.js'; 
+import teamAuthRoutes from './routes/teamAuthRoutes.js';
+import teamDashboardRoutes from './routes/teamDashboardRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import evaluationRoutes from './routes/evaluationRoutes.js';
+import roundsRoutes from './routes/roundsRoutes.js';
+import resultRoutes from './routes/resultRoutes.js';
+import sectionRoutes from './routes/sectionRoutes.js';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/team', teamAuthRoutes);
+app.use('/api/teamDashboard', teamDashboardRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/judge', evaluationRoutes);
+app.use('/api/rounds', roundsRoutes);
+app.use('/api/results', resultRoutes);
+app.use('/api/section', sectionRoutes);
+
+export default app;
