@@ -15,7 +15,6 @@ import {
   getAllProblemStatements,
   getProblemStatementInDepthFile,
   getProblemStatementOverviewFile,
-  getProblemStatementFile,
   deleteProblemStatement,
 } from "../controllers/adminProblemController.js";
 import multer from "multer";
@@ -64,11 +63,6 @@ router.get(
   "/problem-statements",
   protect,
   getAllProblemStatements
-);
-router.get(
-  "/problem-statement/:id/file/:type",
-  protect,
-  getProblemStatementFile
 );
 router.get(
   "/problem-statement/:id/file/overview",

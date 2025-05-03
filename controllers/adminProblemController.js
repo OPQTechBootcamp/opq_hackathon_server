@@ -91,36 +91,33 @@ export const deleteProblemStatement = async (req, res) => {
     }
   };
 
-  export const getProblemStatementFile = async (req, res) => {
-    const { id, type } = req.params;
+  export const checkHackathonStarted = async () => {
+    const now = new Date();
+    const [rows] = await db.query(
+      `SELECT start_datetime FROM hackathon_schedule ORDER BY start_datetime ASC LIMIT 1`
+    );
   
-    if (!['overview', 'in-depth'].includes(type)) {
-      return res.status(400).json({ error: "Invalid file type" });
-    }
+    if (!rows.length) return { started: false, remaining: 0 };
   
-    try {
-      const [rows] = await db.query(`
-        SELECT ${type === 'overview' ? 'overview_file_name, overview_file' : 'in_depth_file_name, in_depth_file'} 
-        FROM problem_statements WHERE id = ?
-      `, [id]);
+    const startTime = new Date(rows[0].start_datetime);
+    const remaining = Math.max(0, startTime - now);
   
-      if (!rows.length) return res.status(404).json({ error: "Not found" });
-  
-      const fileName = rows[0][`${type}_file_name`];
-      const fileBuffer = rows[0][`${type}_file`];
-  
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.send(fileBuffer);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Error fetching file" });
-    }
+    return { started: now >= startTime, remaining };
   };
 
   // Route: /admin/problem-statements
-export const getAllProblemStatements = async (req, res) => {
+  export const getAllProblemStatements = async (req, res) => {
     try {
+      if (req.user.type === 'team') {
+        const { started, remaining } = await checkHackathonStarted();
+        if (!started) {
+          const minutes = Math.ceil(remaining / 60000);
+          return res.status(403).json({
+            error: `Hackathon hasn't started yet. Please check back in ${minutes} minutes.`,
+          });
+        }
+      }
+  
       const [rows] = await db.query(`
         SELECT id, title, description, 
                overview_file_name, in_depth_file_name, 
@@ -140,6 +137,15 @@ export const getAllProblemStatements = async (req, res) => {
 export const getProblemStatementOverviewFile =  async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.user.type === 'team') {
+      const { started, remaining } = await checkHackathonStarted();
+      if (!started) {
+        const minutes = Math.ceil(remaining / 60000);
+        return res.status(403).json({
+          error: `Hackathon hasn't started yet. Please check back in ${minutes} minutes.`,
+        });
+      }
+    }
     const [rows] = await db.query(
       "SELECT overview_file, overview_file_name FROM problem_statements WHERE id = ?",
       [id]
@@ -164,6 +170,15 @@ export const getProblemStatementOverviewFile =  async (req, res) => {
 export const getProblemStatementInDepthFile = async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.user.type === 'team') {
+      const { started, remaining } = await checkHackathonStarted();
+      if (!started) {
+        const minutes = Math.ceil(remaining / 60000);
+        return res.status(403).json({
+          error: `Hackathon hasn't started yet. Please check back in ${minutes} minutes.`,
+        });
+      }
+    }
     const [rows] = await db.query(
       "SELECT in_depth_file, in_depth_file_name FROM problem_statements WHERE id = ?",
       [id]
