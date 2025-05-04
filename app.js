@@ -14,8 +14,12 @@ import timerRoute from './routes/timerRoute.js';
 
 const app = express();
 app.use(cors({
-    // Add your CloudFront domain to the list of allowed origins
-    origin: ['http://3.6.233.101', 'https://d2bgut31xyvm83.cloudfront.net/', 'https://hack.opqtech.ai'],
+    origin: [
+      'http://3.6.233.101', 
+      'https://d2bgut31xyvm83.cloudfront.net', 
+      'https://hack.opqtech.ai',
+      'http://localhost:5173'  
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
   }));

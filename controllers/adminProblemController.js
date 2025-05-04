@@ -108,6 +108,8 @@ export const deleteProblemStatement = async (req, res) => {
   // Route: /admin/problem-statements
   export const getAllProblemStatements = async (req, res) => {
     try {
+      let selectionRemainingMins = 0;
+      
       if (req.user.type === 'team') {
         const { started, remaining } = await checkHackathonStarted();
         if (!started) {
@@ -115,6 +117,23 @@ export const deleteProblemStatement = async (req, res) => {
           return res.status(403).json({
             error: `Hackathon hasn't started yet. Please check back in ${minutes} minutes.`,
           });
+        }
+        
+        // Calculate problem statement selection time remaining
+        const now = new Date();
+        const [scheduleRows] = await db.query(
+          `SELECT start_datetime, ps_selection_time FROM hackathon_schedule ORDER BY start_datetime ASC LIMIT 1`
+        );
+        
+        if (scheduleRows.length > 0) {
+          const startTime = new Date(scheduleRows[0].start_datetime);
+          const psSelectionTime = scheduleRows[0].ps_selection_time || 30; // Default to 30 minutes if not set
+          const psSelectionEndTime = new Date(startTime.getTime() + (psSelectionTime * 60000));
+          
+          // Only calculate remaining time if we're in the selection window
+          if (now < psSelectionEndTime) {
+            selectionRemainingMins = Math.ceil((psSelectionEndTime - now) / 60000);
+          }
         }
       }
   
@@ -126,7 +145,11 @@ export const deleteProblemStatement = async (req, res) => {
         ORDER BY created_at DESC
       `);
   
-      res.json(rows);
+      // Include the selection remaining time in the response
+      res.json({
+        problemStatements: rows,
+        selectionRemainingMins
+      });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error fetching problem statements" });

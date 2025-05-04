@@ -1,17 +1,23 @@
-import db from '../config/db.js';
+import db from "../config/db.js";
 
 // Create a new schedule and insert rounds
 export const createSchedule = async (req, res) => {
-  const { title, start_datetime, end_datetime, number_of_rounds } = req.body;
+  const {
+    title,
+    start_datetime,
+    end_datetime,
+    number_of_rounds,
+    ps_selection_time,
+  } = req.body;
 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    // Insert schedule
+    // Insert schedule with ps_selection_time
     const [result] = await connection.query(
-      `INSERT INTO hackathon_schedule (title, number_of_rounds, start_datetime, end_datetime) VALUES (?, ?, ?, ?)`,
-      [title, number_of_rounds, start_datetime, end_datetime]
+      `INSERT INTO hackathon_schedule (title, number_of_rounds, start_datetime, end_datetime, ps_selection_time) VALUES (?, ?, ?, ?, ?)`,
+      [title, number_of_rounds, start_datetime, end_datetime, ps_selection_time]
     );
 
     const scheduleId = result.insertId;
@@ -29,11 +35,13 @@ export const createSchedule = async (req, res) => {
     await Promise.all(roundPromises);
 
     await connection.commit();
-    res.status(201).json({ message: 'Schedule and rounds created successfully' });
+    res
+      .status(201)
+      .json({ message: "Schedule and rounds created successfully" });
   } catch (error) {
     await connection.rollback();
-    console.error('Create Schedule Error:', error);
-    res.status(500).json({ error: 'Failed to create schedule and rounds' });
+    console.error("Create Schedule Error:", error);
+    res.status(500).json({ error: "Failed to create schedule and rounds" });
   } finally {
     connection.release();
   }
@@ -42,16 +50,29 @@ export const createSchedule = async (req, res) => {
 // Update schedule and reset rounds
 export const updateSchedule = async (req, res) => {
   const { id } = req.params;
-  const { title, start_datetime, end_datetime, number_of_rounds } = req.body;
+  const {
+    title,
+    start_datetime,
+    end_datetime,
+    number_of_rounds,
+    ps_selection_time,
+  } = req.body;
 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    // Update schedule
+    // Update schedule with ps_selection_time
     await connection.query(
-      `UPDATE hackathon_schedule SET title = ?, number_of_rounds = ?, start_datetime = ?, end_datetime = ? WHERE id = ?`,
-      [title, number_of_rounds, start_datetime, end_datetime, id]
+      `UPDATE hackathon_schedule SET title = ?, number_of_rounds = ?, start_datetime = ?, end_datetime = ?, ps_selection_time = ? WHERE id = ?`,
+      [
+        title,
+        number_of_rounds,
+        start_datetime,
+        end_datetime,
+        ps_selection_time,
+        id,
+      ]
     );
 
     // Delete old rounds
@@ -70,11 +91,11 @@ export const updateSchedule = async (req, res) => {
     await Promise.all(roundPromises);
 
     await connection.commit();
-    res.json({ message: 'Schedule and rounds updated successfully' });
+    res.json({ message: "Schedule and rounds updated successfully" });
   } catch (error) {
     await connection.rollback();
-    console.error('Update Schedule Error:', error);
-    res.status(500).json({ error: 'Failed to update schedule and rounds' });
+    console.error("Update Schedule Error:", error);
+    res.status(500).json({ error: "Failed to update schedule and rounds" });
   } finally {
     connection.release();
   }
@@ -95,11 +116,11 @@ export const deleteSchedule = async (req, res) => {
     await connection.query(`DELETE FROM rounds`);
 
     await connection.commit();
-    res.json({ message: 'Schedule and rounds deleted successfully' });
+    res.json({ message: "Schedule and rounds deleted successfully" });
   } catch (error) {
     await connection.rollback();
-    console.error('Delete Schedule Error:', error);
-    res.status(500).json({ error: 'Failed to delete schedule and rounds' });
+    console.error("Delete Schedule Error:", error);
+    res.status(500).json({ error: "Failed to delete schedule and rounds" });
   } finally {
     connection.release();
   }
@@ -108,11 +129,13 @@ export const deleteSchedule = async (req, res) => {
 // Get all schedules
 export const getAllSchedules = async (req, res) => {
   try {
-    const [schedules] = await db.query(`SELECT * FROM hackathon_schedule ORDER BY start_datetime`);
+    const [schedules] = await db.query(
+      `SELECT * FROM hackathon_schedule ORDER BY start_datetime`
+    );
     res.json(schedules);
   } catch (error) {
-    console.error('Fetch Schedules Error:', error);
-    res.status(500).json({ error: 'Failed to fetch schedules' });
+    console.error("Fetch Schedules Error:", error);
+    res.status(500).json({ error: "Failed to fetch schedules" });
   }
 };
 
@@ -121,13 +144,16 @@ export const getScheduleById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await db.query(`SELECT * FROM hackathon_schedule WHERE id = ?`, [id]);
+    const [rows] = await db.query(
+      `SELECT * FROM hackathon_schedule WHERE id = ?`,
+      [id]
+    );
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Schedule not found' });
+      return res.status(404).json({ error: "Schedule not found" });
     }
     res.json(rows[0]);
   } catch (error) {
-    console.error('Fetch Single Schedule Error:', error);
-    res.status(500).json({ error: 'Failed to fetch schedule' });
+    console.error("Fetch Single Schedule Error:", error);
+    res.status(500).json({ error: "Failed to fetch schedule" });
   }
 };
