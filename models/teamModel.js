@@ -15,11 +15,13 @@ export const createTeam = async ({
   phone_number, 
   alternate_phone, 
   password, 
-  team_members 
+  team_members,
+  section,           
+  section_team_id  
 }) => {
   const [result] = await db.query(
-    'INSERT INTO teams (team_name, team_email, alternate_email, phone_number, alternate_phone, password, team_members) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [team_name, team_email, alternate_email, phone_number, alternate_phone, password, JSON.stringify(team_members)]
+    'INSERT INTO teams (team_name, team_email, alternate_email, phone_number, alternate_phone, password, team_members, section, section_team_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [team_name, team_email, alternate_email, phone_number, alternate_phone, password, JSON.stringify(team_members), section, section_team_id]
   );
   return result; 
 };

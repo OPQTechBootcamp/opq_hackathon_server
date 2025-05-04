@@ -8,59 +8,65 @@ const generateToken = (id) => {
 };
 
 export const registerTeam = async (req, res) => {
-  const { 
-      team_name, 
-      team_email, 
-      alternate_email, 
-      phone_number, 
-      alternate_phone, 
-      password, 
-      team_members 
-  } = req.body;
-
-  if (!team_name || !team_email || !password || !team_members || !phone_number) {
-      return res.status(400).json({ status: 'error', message: 'All fields including members are required' });
-  }
-
-  const existing = await findTeamByEmailOrName(team_email);
-  if (existing) {
-      return res.status(409).json({ status: 'error', message: 'Team with this email already exists' });
-  }    
+    const { 
+        team_name, 
+        team_email, 
+        alternate_email, 
+        phone_number, 
+        alternate_phone, 
+        password, 
+        team_members,
+        section,           
+        section_team_id    
+    } = req.body;
   
-  const existingName = await findTeamByEmailOrName(team_name);
-  if (existingName) {
-      return res.status(409).json({ status: 'error', message: 'Team with this name already exists' });
-  }
-
-  try {
-      const password_hash = await bcrypt.hash(password, 10);
-      const newTeam = await createTeam({ 
-          team_name, 
-          team_email, 
-          alternate_email, 
-          phone_number, 
-          alternate_phone, 
-          password: password_hash, 
-          team_members 
-      });
-      return res.status(201).json({
-          status: 'success',
-          message: 'Team registered successfully',
-          team: {
-              id: newTeam.insertId, 
-              team_name,
-              team_email,
-              alternate_email,
-              phone_number,
-              alternate_phone,
-              team_members
-          }
-      });
-  } catch (error) {
-      console.error('Error registering team:', error);
-      return res.status(500).json({ status: 'error', message: 'Failed to register team' });
-  }
-};
+    if (!team_name || !team_email || !password || !team_members || !phone_number) {
+        return res.status(400).json({ status: 'error', message: 'All fields including members are required' });
+    }
+  
+    const existing = await findTeamByEmailOrName(team_email);
+    if (existing) {
+        return res.status(409).json({ status: 'error', message: 'Team with this email already exists' });
+    }    
+    
+    const existingName = await findTeamByEmailOrName(team_name);
+    if (existingName) {
+        return res.status(409).json({ status: 'error', message: 'Team with this name already exists' });
+    }
+  
+    try {
+        const password_hash = await bcrypt.hash(password, 10);
+        const newTeam = await createTeam({ 
+            team_name, 
+            team_email, 
+            alternate_email, 
+            phone_number, 
+            alternate_phone, 
+            password: password_hash, 
+            team_members,
+            section,           
+            section_team_id   
+        });
+        return res.status(201).json({
+            status: 'success',
+            message: 'Team registered successfully',
+            team: {
+                id: newTeam.insertId, 
+                team_name,
+                team_email,
+                alternate_email,
+                phone_number,
+                alternate_phone,
+                team_members,
+                section,           
+                section_team_id    
+            }
+        });
+    } catch (error) {
+        console.error('Error registering team:', error);
+        return res.status(500).json({ status: 'error', message: 'Failed to register team' });
+    }
+  };
 
 export const loginTeam = async (req, res) => {
     const { team_email, password } = req.body;

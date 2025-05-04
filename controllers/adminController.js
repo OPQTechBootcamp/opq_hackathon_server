@@ -33,12 +33,32 @@ export const getTeamJudges = async (req, res) => {
 };
 
 export const assignJudges = async (req, res) => {
-  const { teamId, judgeIds } = req.body; // judgeIds = array
+  const { teamIds, judgeIds } = req.body; // Both teamIds and judgeIds are arrays
+  
   try {
-    const values = judgeIds.map(judgeId => [teamId, judgeId]);
+    // Create an array of value pairs for all combinations of teams and judges
+    const values = [];
+    
+    // For each team, assign all the judges
+    teamIds.forEach(teamId => {
+      judgeIds.forEach(judgeId => {
+        values.push([teamId, judgeId]);
+      });
+    });
+    
+    // Insert all team-judge assignments into the database
     await db.query('INSERT INTO team_judges (team_id, judge_id) VALUES ?', [values]);
-    res.json({ message: 'Judges assigned successfully.' });
+    
+    res.json({ 
+      message: 'Judges assigned successfully to teams.',
+      data: {
+        teamsCount: teamIds.length,
+        judgesCount: judgeIds.length,
+        assignmentsCount: values.length
+      }
+    });
   } catch (err) {
+    console.error('Error assigning judges to teams:', err);
     res.status(500).json({ error: err.message });
   }
 };

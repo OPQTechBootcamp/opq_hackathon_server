@@ -54,43 +54,21 @@ export const updateSchedule = async (req, res) => {
     title,
     start_datetime,
     end_datetime,
-    number_of_rounds,
     ps_selection_time,
   } = req.body;
 
   const connection = await db.getConnection();
   try {
-    await connection.beginTransaction();
-
-    // Update schedule with ps_selection_time
     await connection.query(
-      `UPDATE hackathon_schedule SET title = ?, number_of_rounds = ?, start_datetime = ?, end_datetime = ?, ps_selection_time = ? WHERE id = ?`,
+      `UPDATE hackathon_schedule SET title = ?, start_datetime = ?, end_datetime = ?, ps_selection_time = ? WHERE id = ?`,
       [
         title,
-        number_of_rounds,
         start_datetime,
         end_datetime,
         ps_selection_time,
         id,
       ]
     );
-
-    // Delete old rounds
-    await connection.query(`DELETE FROM rounds`);
-
-    // Insert updated rounds
-    const roundPromises = [];
-    for (let i = 1; i <= number_of_rounds; i++) {
-      roundPromises.push(
-        connection.query(
-          `INSERT INTO rounds (round_number, title) VALUES (?, ?)`,
-          [i, `R${i}`]
-        )
-      );
-    }
-    await Promise.all(roundPromises);
-
-    await connection.commit();
     res.json({ message: "Schedule and rounds updated successfully" });
   } catch (error) {
     await connection.rollback();
