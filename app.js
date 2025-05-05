@@ -10,6 +10,7 @@ import resultRoutes from './routes/resultRoutes.js';
 import sectionRoutes from './routes/sectionRoutes.js';
 import hackathonScheduleRoutes from './routes/hackathonScheduleRoutes.js';
 import timerRoute from './routes/timerRoute.js';
+import linkRoutes from './routes/linkRoutes.js';
 
 
 const app = express();
@@ -36,5 +37,6 @@ app.use('/api/results', resultRoutes);
 app.use('/api/section', sectionRoutes);
 app.use('/api/schedules', hackathonScheduleRoutes);
 app.use('/api', timerRoute);
+app.use('/api', linkRoutes);
 
 export default app;

@@ -109,6 +109,7 @@ export const deleteProblemStatement = async (req, res) => {
   export const getAllProblemStatements = async (req, res) => {
     try {
       let selectionRemainingMins = 0;
+      let editSelectionTimeRemaining = 0;
       
       if (req.user.type === 'team') {
         const { started, remaining } = await checkHackathonStarted();
@@ -134,6 +135,13 @@ export const deleteProblemStatement = async (req, res) => {
           if (now < psSelectionEndTime) {
             selectionRemainingMins = Math.ceil((psSelectionEndTime - now) / 60000);
           }
+          
+          // Calculate edit selection time remaining (4 hours from start time)
+          const editEndTime = new Date(startTime.getTime() + (4 * 60 * 60000)); 
+          
+          if (now < editEndTime) {
+            editSelectionTimeRemaining = Math.ceil((editEndTime - now) / 60000);
+          }
         }
       }
   
@@ -144,11 +152,11 @@ export const deleteProblemStatement = async (req, res) => {
         FROM problem_statements
         ORDER BY created_at DESC
       `);
-  
-      // Include the selection remaining time in the response
+
       res.json({
         problemStatements: rows,
-        selectionRemainingMins
+        selectionRemainingMins,
+        editSelectionTimeRemaining
       });
     } catch (err) {
       console.error(err);

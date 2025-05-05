@@ -11,7 +11,7 @@ export const getAllTeamsWithCurrentRound = async (req, res) => {
                 r.id AS round_id,
                 r.round_number,
                 r.title AS current_round_title,
-                COALESCE(ROUND(AVG(e.total_score / 8), 2), 'NA') AS average_rating,
+                COALESCE(ROUND(AVG(e.total_score * 10 / 75), 2), 'NA') AS average_rating,
                 COALESCE((
                     SELECT r2.round_number
                     FROM evaluations e2
@@ -94,7 +94,7 @@ export const getAllTeamsWithCurrentRound = async (req, res) => {
         SELECT 
           t.id AS team_id,
           t.team_name,
-          ROUND(AVG(e.total_score / 8), 2) AS average_rating,
+          ROUND(AVG(e.total_score * 10 / 75), 2) AS average_rating,
           COUNT(DISTINCT e.round_id) AS rounds_evaluated
         FROM teams t
         LEFT JOIN evaluations e ON t.id = e.team_id

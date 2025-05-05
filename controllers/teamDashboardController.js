@@ -155,8 +155,6 @@ export const selectedProblemStatement = async (req, res) => {
   }
 };
 
-// router.post('/team/select-problem-statement/:id', authTeamMiddleware,
-
 export const selectProblemStatementId = async (req, res) => {
   try {
     const { id, team_name } = req.body;
@@ -219,3 +217,62 @@ export const selectProblemStatementId = async (req, res) => {
   }
 };
 
+
+export const editProblemStatementId = async (req, res) => {
+  try {
+    const { team_name, problem_statement_id } = req.body;
+    const teamId = req.params.team_id;
+
+    // Validate required fields
+    if (!teamId || !team_name) {
+      return res.status(400).json({
+        message: "Team ID and Team Name are required",
+      });
+    }
+
+    if (!problem_statement_id) {
+      return res.status(400).json({
+        message: "New problem statement ID is required in the request body",
+      });
+    }
+
+    // Verify the team exists
+    const [teamRows] = await db.query(
+      `SELECT * FROM teams WHERE id = ? AND team_name = ?`,
+      [teamId, team_name]
+    );
+    
+    const team = teamRows[0];
+    if (!team) {
+      return res.status(404).json({
+        message: "Team not found with the provided ID and Name",
+      });
+    }
+
+    // Validate the new problem statement exists
+    const [problemRows] = await db.query(
+      `SELECT id FROM problem_statements WHERE id = ?`,
+      [problem_statement_id]
+    );
+
+    const problem = problemRows[0];
+    if (!problem) {
+      return res.status(404).json({
+        message: "Problem statement not found",
+      });
+    }
+
+    // Update the team with the new problem statement ID
+    await db.query(
+      `UPDATE teams SET problem_statement_id = ? WHERE id = ?`,
+      [problem_statement_id, teamId]
+    );
+
+    return res.status(200).json({
+      message: "Problem statement updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

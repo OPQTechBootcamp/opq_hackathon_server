@@ -176,7 +176,7 @@ export const fetchAllTeamsRatings = async (req, res) => {
                 t.section AS team_group,
         t.section_team_id AS team_code,
         ps.title AS problem_statement_title,
-        ROUND(AVG(e.total_score / 8), 2) AS average_rating,
+        ROUND(AVG(e.total_score * 10 / 75), 2) AS average_rating,
         GROUP_CONCAT(DISTINCT u.name) AS judge_names,
         GROUP_CONCAT(DISTINCT r.round_number ORDER BY r.round_number ASC) AS rounds
       FROM 
