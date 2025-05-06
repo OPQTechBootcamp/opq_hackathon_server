@@ -43,7 +43,7 @@ router.delete(
 router.get(
   "/users-teams",
   protect,
-  allowRoles("admin", "coordinator"),
+  allowRoles("admin", "coordinator", "faculty"),
   getAllUsersAndTeams
 );
 
