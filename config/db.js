@@ -10,10 +10,11 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  enableKeepAlive: true, // Keep connections alive
-  keepAliveInitialDelay: 30000, // Ping the server every 30 seconds
-  connectTimeout: 60000, // Longer timeout for initial connection
-  idleTimeout: 60000 * 60, // Keep idle connections for up to an hour
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 30000,
+  connectTimeout: 60000,
+  idleTimeout: 60000 * 60,
+  timezone: 'Z', // Set timezone to UTC explicitly
 });
 
 setInterval(async () => {
@@ -23,6 +24,6 @@ setInterval(async () => {
   } catch (error) {
     console.error('DB keepalive ping failed:', error);
   }
-}, 5 * 60 * 1000); // Run every 5 minutes
+}, 5 * 60 * 1000);
 
 export default db;
