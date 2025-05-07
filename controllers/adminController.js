@@ -1,4 +1,5 @@
 import db from '../config/db.js';
+import bcrypt from 'bcryptjs';
 
 export const getUsers = async (req, res) => {
   try {
@@ -95,5 +96,31 @@ export const getAllUsersAndTeams = async (req, res) => {
   } catch (error) {
     console.error('Error fetching users and teams:', error);
     res.status(500).json({ error: 'Failed to fetch users and teams' });
+  }
+};
+
+// controllers/adminController.js
+export const resetPassword = async (req, res) => {
+  const { type, id, newPassword } = req.body;
+
+  if (!type || !id || !newPassword) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10); // Use bcrypt for hashing
+
+  try {
+    if (type === 'user') {
+      await db.query(`UPDATE users SET password = ? WHERE id = ?`, [hashedPassword, id]);
+    } else if (type === 'team') {
+      await db.query(`UPDATE teams SET password = ? WHERE id = ?`, [hashedPassword, id]);
+    } else {
+      return res.status(400).json({ error: 'Invalid type' });
+    }
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Password reset failed' });
   }
 };

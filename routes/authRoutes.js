@@ -4,7 +4,7 @@ import { loginUser, registerUser, getProfile } from '../controllers/authControll
 import { protect, allowRoles } from '../middlewares/authMiddleware.js';
 
 router.post('/login', loginUser);
-router.post('/register', protect, allowRoles('admin'), registerUser);
+router.post('/register', protect, allowRoles('admin', 'coordinator'), registerUser);
 router.get('/me', protect, getProfile);
 
 export default router;

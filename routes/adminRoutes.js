@@ -7,6 +7,7 @@ import {
   assignJudges,
   unassignJudge,
   getAllUsersAndTeams,
+  resetPassword,
 } from "../controllers/adminController.js";
 import { protect, allowRoles } from "../middlewares/authMiddleware.js";
 import {
@@ -27,10 +28,20 @@ router.get("/users", protect, allowRoles("admin", "coordinator"), getUsers);
 router.get("/teams", protect, allowRoles("admin", "coordinator"), getTeams);
 
 // Get team-judge assignments
-router.get("/team-judges", protect, allowRoles("admin", "coordinator"), getTeamJudges);
+router.get(
+  "/team-judges",
+  protect,
+  allowRoles("admin", "coordinator"),
+  getTeamJudges
+);
 
 // Assign judges to a team
-router.post("/assign-judges", protect, allowRoles("admin", "coordinator"), assignJudges);
+router.post(
+  "/assign-judges",
+  protect,
+  allowRoles("admin", "coordinator"),
+  assignJudges
+);
 
 // Unassign judge from a team
 router.delete(
@@ -59,11 +70,7 @@ router.post(
 );
 
 // routes/adminProblemRoutes.js
-router.get(
-  "/problem-statements",
-  protect,
-  getAllProblemStatements
-);
+router.get("/problem-statements", protect, getAllProblemStatements);
 router.get(
   "/problem-statement/:id/file/overview",
   protect,
@@ -90,5 +97,7 @@ router.delete(
   allowRoles("admin"),
   deleteProblemStatement
 );
+
+router.post("/reset-password", protect, allowRoles("admin"), resetPassword);
 
 export default router;
