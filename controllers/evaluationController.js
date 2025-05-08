@@ -173,10 +173,12 @@ export const fetchAllTeamsRatings = async (req, res) => {
       SELECT
         t.id AS team_id,
         t.team_name,
-                t.section AS team_group,
+        t.section AS team_group,
         t.section_team_id AS team_code,
         ps.title AS problem_statement_title,
-        ROUND(AVG(e.total_score * 10 / 75), 2) AS average_rating,
+        AVG(e.total_score * 10 / 75) AS average_rating,
+        SUM(e.total_score) AS total_score,
+        COUNT(DISTINCT e.round_id) AS round_count,
         GROUP_CONCAT(DISTINCT u.name) AS judge_names,
         GROUP_CONCAT(DISTINCT r.round_number ORDER BY r.round_number ASC) AS rounds
       FROM 
@@ -224,9 +226,18 @@ export const fetchAllTeamsRatings = async (req, res) => {
           }
         }
 
+        // Keep average_rating as a string with exactly 4 decimal places
+        let formattedRating = null;
+        if (team.average_rating !== null) {
+          formattedRating = parseFloat(team.average_rating).toFixed(4);
+        }
+
         return {
           ...team,
           submission_status: submissionStatus,
+          total_score: team.total_score || 0,
+          round_count: team.round_count || 0,
+          average_rating: formattedRating
         };
       })
     );
@@ -238,7 +249,6 @@ export const fetchAllTeamsRatings = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch teams ratings' });
   }
 };
-
 
 
 /**
